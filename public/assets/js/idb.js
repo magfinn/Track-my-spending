@@ -1,11 +1,14 @@
-//handles all IndexDB functionality (for offline use)
+//create variable to hold db connection
 let db;
+// establish a connection to IndexedDB database called 'budget-tracker' and set it to version 1
 const request = indexedDB.open('budget-tracker', 1);
+
+// this event will emit if the database version changes (nonexistant to version 1, v1 to v2, etc.)
 request.onupgradeneeded = function(event) {
-    //if db version changes, this event will save reference to the db
-    const db = event.target.result;
-    //create an object store (table) called 'new_transaction', set it to have an auto incrementing primary key of sorts
-    db.createObjectStore('new_transaction', { autoIncrement: true });
+  // save a reference to the database 
+  const db = event.target.result;
+  // create an object store (table) called `new_item`, set it to have an auto incrementing primary key of sorts 
+  db.createObjectStore('new_transaction', { autoIncrement: true });
 };
 
 //upon a successful request
