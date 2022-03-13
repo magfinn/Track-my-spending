@@ -4,24 +4,24 @@ let db;
 const request = indexedDB.open('transaction-tracker', 1);
 
 // this event will emit if the database version changes (nonexistant to version 1, v1 to v2, etc.)
-request.onupgradeneeded = function(event) {
-  // save a reference to the database 
-  const db = event.target.result;
-  // create an object store (table) called `new_item`, set it to have an auto incrementing primary key of sorts 
-  db.createObjectStore('new_transaction', { autoIncrement: true });
+request.onupgradeneeded = function (event) {
+    // save a reference to the database 
+    const db = event.target.result;
+    // create an object store (table) called `new_item`, set it to have an auto incrementing primary key of sorts 
+    db.createObjectStore('new_transaction', { autoIncrement: true });
 };
 
 //upon a successful request
-request.onsucess= function(event) {
+request.onsucess = function (event) {
     db = event.target.result;
 
     //check if app is online and if so, run uploadTransaction() function to send all local db data to api
-    if(navigator.onLine) {
+    if (navigator.onLine) {
         uploadTransaction();
     }
 };
 
-request.onerror = function(event) {
+request.onerror = function (event) {
     console.log(event.target.errorCode);
 };
 
@@ -47,10 +47,10 @@ function uploadTransaction() {
     //get all records from store and set to a variable
     const getAll = transactionObjectStore.getAll();
 
-    getAll.onsuccess = function() {
+    getAll.onsuccess = function () {
         //if there was indexed data in store, send to api server
-        if(getAll.result.length > 0) {
-            fetch('/api/transaction/', {
+        if (getAll.result.length > 0) {
+            fetch('/api/transaction', {
                 method: 'POST',
                 body: JSON.stringify(getAll.result),
                 headers: {
@@ -58,22 +58,22 @@ function uploadTransaction() {
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
-            .then(serverResponse => {
-                if(serverResponse.message) {
-                    throw new Error(serverResponse);
-                }
-                //open one more transaction
-                const transaction = db.transaction(['new_transaction'], 'readwrite');
-                //access to the new_transaction object store
-                const transactionObjectStore = transaction.objectStore('new_transaction');
-                //clear all transactions in your store
-                transactionObjectStore.clear();
-                alert('All transactions have been submitted!');
-            })
-            .catch(err => {
-                console.log(err);
-            });
+                .then((response) => response.json())
+                .then(serverResponse => {
+                    if (serverResponse.message) {
+                        throw new Error(serverResponse);
+                    }
+                    //open one more transaction
+                    const transaction = db.transaction(['new_transaction'], 'readwrite');
+                    //access to the new_transaction object store
+                    const transactionObjectStore = transaction.objectStore('new_transaction');
+                    //clear all transactions in your store
+                    transactionObjectStore.clear();
+                    alert('All transactions have been submitted!');
+                })
+                .catch(err => {
+                    console.log(err);
+                });
         }
     }
 };
